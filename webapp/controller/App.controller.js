@@ -4,8 +4,21 @@ sap.ui.define(
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
+    "sap/ui/model/Sorter",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
+    "sap/ui/model/FilterType",
   ],
-  function (Controller, JSONModel, MessageToast, MessageBox) {
+  function (
+    Controller,
+    JSONModel,
+    MessageToast,
+    MessageBox,
+    Sorter,
+    Filter,
+    FilterOperator,
+    FilterType
+  ) {
     "use strict";
 
     return Controller.extend("sap.ui.core.tutorial.odatav4.controller.App", {
@@ -13,8 +26,9 @@ sap.ui.define(
        *  Hook for initializing the controller
        */
       onInit: function () {
-        var oJSONData = {
+        let oJSONData = {
             busy: false,
+            order: 0,
           },
           oModel = new JSONModel(oJSONData);
 
@@ -22,7 +36,7 @@ sap.ui.define(
       },
 
       onRefresh: function () {
-        var oBinding = this.byId("peopleList").getBinding("items");
+        let oBinding = this.byId("peopleList").getBinding("items");
 
         if (oBinding.hasPendingChanges()) {
           MessageBox.error(this._getText("refreshNotPossibleMessage"));
@@ -30,6 +44,40 @@ sap.ui.define(
         }
         oBinding.refresh();
         MessageToast.show(this._getText("refreshSuccessMessage"));
+      },
+
+      onSearch: function () {
+        const oView = this.getView(),
+          sValue = oView.byId("searchField").getValue(),
+          oFilter = new Filter("LastName", FilterOperator.Contains, sValue);
+
+        oView
+          .byId("peopleList")
+          .getBinding("items")
+          .filter(oFilter, FilterType.Application);
+      },
+
+      onSort: function () {
+        const oView = this.getView(),
+          aStates = [undefined, "asc", "desc"],
+          aStateTextIds = ["sortNone", "sortAscending", "sortDescending"];
+
+        let iOrder = oView.getModel("appView").getProperty("/order"),
+          sMessage;
+
+        iOrder = (iOrder + 1) % aStates.length;
+        const sOrder = aStates[iOrder];
+
+        oView.getModel("appView").setProperty("/order", iOrder);
+        oView
+          .byId("peopleList")
+          .getBinding("items")
+          .sort(sOrder && new Sorter("LastName", sOrder === "desc"));
+
+        sMessage = this._getText("sortMessage", [
+          this._getText(aStateTextIds[iOrder]),
+        ]);
+        MessageToast.show(sMessage);
       },
 
       _getText: function (sTextId, aArgs) {
