@@ -11,14 +11,15 @@
 						<Table
 							id="peopleList"
 							growing="true"
-							growingThreshold="10"
+							growingThreshold="20"
 							items="{
 								path: '/People',
 								parameters: {
 									$count: true,
                                     $$updateGroupId : 'peopleGroup'
 								}
-							}">
+							}"
+							mode="SingleSelectLeft">
 
 							<headerToolbar>
 								<OverflowToolbar>
@@ -40,6 +41,15 @@
                                                 <OverflowToolbarLayoutData priority="NeverOverflow"/>
                                             </layoutData>
                                         </Button>
+										<Button
+											id="deleteUserButton"
+											icon="sap-icon://delete"
+											tooltip="{i18n>deleteButtonText}"
+											press=".onDelete">
+											<layoutData>
+												<OverflowToolbarLayoutData priority="NeverOverflow"/>
+											</layoutData>
+										</Button>
 										<Button
 											id="refreshUsersButton"
 											icon="sap-icon://refresh"
@@ -109,7 +119,7 @@
                                 press=".onResetChanges"/>
                         </Toolbar>
                     </footer>
-					
+
 				</Page>
 			</pages>
 		</App>

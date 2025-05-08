@@ -39,6 +39,7 @@ sap.ui.define(
             busy: false,
             hasUIChanges: false,
             usernameEmpty: true,
+            usernameEmpty: false,
             order: 0,
           });
 
@@ -70,6 +71,36 @@ sap.ui.define(
             return true;
           }
         });
+      },
+
+      onDelete() {
+        let oContext,
+          oSelected = this.byId("peopleList").getSelectedItem(),
+          sUserName;
+
+        if (oSelected) {
+          oContext = oSelected.getBindingContext();
+          sUserName = oContext.getProperty("UserName");
+          oContext.delete().then(
+            () => {
+              MessageToast.show(
+                this._getText("deletionSuccessMessage", sUserName)
+              );
+            },
+            (oError) => {
+              this._setUIChanges();
+              if (oError.canceled) {
+                MessageToast.show(
+                  this._getText("deletionRestoredMessage", sUserName)
+                );
+                return;
+              }
+              MessageBox.error(oError.message + ": " + sUserName);
+            }
+          );
+
+          this._setUIChanges(true);
+        }
       },
 
       onInputChange(oEvt) {
@@ -106,6 +137,7 @@ sap.ui.define(
         const fnSuccess = () => {
           this._setBusy(false);
           MessageToast.show(this._getText("changesSentMessage"));
+          this.byId("peopleList").getBinding("items").refresh(); // explicitly refresh the list binding to ensure client cache is in sync
           this._setUIChanges(false);
         };
 
@@ -120,6 +152,7 @@ sap.ui.define(
           .getModel()
           .submitBatch("peopleGroup")
           .then(fnSuccess, fnError);
+
         this._bTechnicalErrors = false; // If there were technical errors, a new save resets them.
       },
 
