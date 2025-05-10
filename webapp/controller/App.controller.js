@@ -162,6 +162,21 @@ sap.ui.define(
         this._setUIChanges();
       },
 
+      onResetDataSource() {
+        let oModel = this.getView().getModel(),
+          oOperation = oModel.bindContext("/ResetDataSource(...)");
+
+        oOperation.invoke().then(
+          () => {
+            oModel.refresh();
+            MessageToast.show(this._getText("sourceResetSuccessMessage"));
+          },
+          (oError) => {
+            MessageBox.error(oError.message);
+          }
+        );
+      },
+
       onSearch() {
         const oView = this.getView(),
           sValue = oView.byId("searchField").getValue(),
