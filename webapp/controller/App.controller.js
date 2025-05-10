@@ -75,7 +75,8 @@ sap.ui.define(
 
       onDelete() {
         let oContext,
-          oSelected = this.byId("peopleList").getSelectedItem(),
+          oPeopleList = this.byId("peopleList"),
+          oSelected = oPeopleList.getSelectedItem(),
           sUserName;
 
         if (oSelected) {
@@ -88,6 +89,12 @@ sap.ui.define(
               );
             },
             (oError) => {
+              if (
+                oContext === oPeopleList.getSelectedItem().getBindingContext()
+              ) {
+                this._setDetailArea(oContext);
+              }
+
               this._setUIChanges();
               if (oError.canceled) {
                 MessageToast.show(
@@ -99,6 +106,7 @@ sap.ui.define(
             }
           );
 
+          this._setDetailArea();
           this._setUIChanges(true);
         }
       },
@@ -239,6 +247,12 @@ sap.ui.define(
         bMessageOpen = true;
       },
 
+      onSelectionChange(oEvent) {
+        this._setDetailArea(
+          oEvent.getParameter("listItem").getBindingContext()
+        );
+      },
+
       _getText(sTextId, aArgs) {
         return this.getOwnerComponent()
           .getModel("i18n")
@@ -260,6 +274,24 @@ sap.ui.define(
       _setBusy: function (bIsBusy) {
         var oModel = this.getView().getModel("appView");
         oModel.setProperty("/busy", bIsBusy);
+      },
+
+      /**
+       * Toggles the visibility of the detail area
+       *
+       * @param {object} [oUserContext] - the current user context
+       */
+      _setDetailArea(oUserContext) {
+        let oDetailArea = this.byId("detailArea"),
+          oLayout = this.byId("defaultLayout"),
+          oSearchField = this.byId("searchField");
+
+        oDetailArea.setBindingContext(oUserContext || null);
+        // resize view
+        oDetailArea.setVisible(!!oUserContext);
+        oLayout.setSize(oUserContext ? "60%" : "100%");
+        oLayout.setResizable(!!oUserContext);
+        oSearchField.setWidth(oUserContext ? "40%" : "20%");
       },
     });
   }
